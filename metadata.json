@@ -1,0 +1,8 @@
+{
+  "name": "SkyShadow Local-Mesh: Autonomous Enterprise Agentic OS",
+  "description": "Turnkey local-first autonomous agentic operating system designed to run on edge hardware (Mac Mini to enterprise cluster) with zero data leakage, dynamic swarm orchestration, and hardware sizing simulator.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

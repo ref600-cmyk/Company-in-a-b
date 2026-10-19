@@ -1,0 +1,62 @@
+{
+  "id": "/",
+  "name": "SkyShadow Local-Mesh OS | Mac Pro Desktop Station",
+  "short_name": "SkyShadow",
+  "description": "Turnkey air-gapped autonomous agentic operating system running on Apple Silicon Mac Pro and local clusters.",
+  "start_url": "/?tab=mac-pro-station",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#020617",
+  "background_color": "#020617",
+  "categories": ["business", "developer", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mac Pro Station",
+      "short_name": "Mac Pro",
+      "description": "Open Mac Pro Hardware & Local Mock Interface",
+      "url": "/?tab=mac-pro-station",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mission Control",
+      "short_name": "Missions",
+      "description": "Autonomous Runbook DAG Orchestrator",
+      "url": "/?tab=mission-control",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Model Zoo",
+      "short_name": "Zoo",
+      "description": "MLX Apple Silicon Model Benchmarks",
+      "url": "/?tab=model-zoo",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

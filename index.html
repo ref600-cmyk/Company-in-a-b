@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+      // Per AI Studio environment constraints: HMR is disabled, ignore WebSocket / @vite/client errors
+      window.addEventListener('unhandledrejection', function(event) {
+        var reason = event && event.reason;
+        var msg = (reason && (reason.message || reason.stack || String(reason))) || '';
+        if (msg.includes('WebSocket') || msg.includes('ws') || msg.includes('vite') || msg.includes('vite:ws')) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      });
+      window.addEventListener('error', function(event) {
+        var msg = (event && (event.message || '')) + ' ' + ((event && event.filename) || '');
+        if (msg.includes('WebSocket') || msg.includes('@vite/client') || msg.includes('vite:ws')) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }, true);
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SkyShadow Local-Mesh | Autonomous Enterprise Agentic OS</title>
+    <meta name="description" content="Turnkey local-first autonomous agentic operating system designed to run on edge hardware (Mac Mini to enterprise cluster) with zero data leakage, dynamic swarm orchestration, and hardware sizing simulator." />
+    <meta property="og:title" content="SkyShadow Local-Mesh | Autonomous Enterprise Agentic OS" />
+    <meta property="og:description" content="Turnkey local-first autonomous agentic operating system designed to run on edge hardware (Mac Mini to enterprise cluster) with zero data leakage, dynamic swarm orchestration, and hardware sizing simulator." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="SkyShadow" />
+    <meta name="theme-color" content="#020617" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js').catch(function() {});
+        });
+      }
+    </script>
+  </head>
+  <body class="bg-slate-950 text-slate-100 antialiased selection:bg-cyan-500 selection:text-slate-950 font-sans">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
