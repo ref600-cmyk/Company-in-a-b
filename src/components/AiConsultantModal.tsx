@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, X, Loader2, Copy, Check, ShieldCheck, Cpu } from 'lucide-react';
+import { Sparkles, X, Loader2, Copy, Check, ShieldCheck, Cpu, Download, Printer } from 'lucide-react';
 
 interface AiConsultantModalProps {
   isOpen: boolean;
@@ -80,6 +80,20 @@ export const AiConsultantModal: React.FC<AiConsultantModalProps> = ({ isOpen, on
     navigator.clipboard.writeText(result);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadMarkdown = () => {
+    if (!result) return;
+    const blob = new Blob([result], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const cleanName = (companyName || 'Enterprise').replace(/[^a-zA-Z0-9_-]/g, '_');
+    link.download = `SkyShadow-Architecture-Blueprint-${cleanName}.md`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -209,6 +223,14 @@ export const AiConsultantModal: React.FC<AiConsultantModalProps> = ({ isOpen, on
                 <Check className="w-4 h-4" /> Customized Blueprint Ready
               </span>
               <div className="flex items-center gap-2">
+                <button
+                  onClick={handleDownloadMarkdown}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-mono bg-cyan-950/70 hover:bg-cyan-900 text-cyan-300 border border-cyan-800 transition-all cursor-pointer"
+                  title="Download Markdown Blueprint"
+                >
+                  <Download className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Download (.md)</span>
+                </button>
                 <button
                   onClick={handleCopy}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer"

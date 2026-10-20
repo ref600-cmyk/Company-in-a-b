@@ -4,6 +4,7 @@ export type NavTab =
   | 'academic-moat' 
   | 'tco-calculator'
   | 'mac-pro-station'
+  | 'osint-reasoning'
   | 'hardware' 
   | 'mesh-topology'
   | 'knowledge-vault'
@@ -165,4 +166,42 @@ export interface ComplianceControl {
   status: 'passed' | 'enforced' | 'verified';
   evidence: string;
   technicalMechanism: string;
+}
+
+// Sovereign OSINT & Extreme Reasoning interfaces
+export interface OsintEntity {
+  id: string;
+  type: 'domain' | 'ip_range' | 'asn' | 'certificate' | 'cve_vulnerability' | 'breached_credential' | 'threat_actor';
+  label: string;
+  value: string;
+  riskScore: number; // 0 - 100
+  source: string;
+  details: Record<string, string>;
+}
+
+export interface ReasoningStep {
+  stepNumber: number;
+  phase: 'hypothesis' | 'cross_examination' | 'counter_factual' | 'synthesis' | 'verdict';
+  thoughtTrace: string;
+  confidence: number; // 0 - 100%
+  verificationCheck: string;
+  tokensUsed: number;
+}
+
+export interface OsintInvestigationReport {
+  target: string;
+  investigationId: string;
+  timestamp: string;
+  overallThreatScore: number;
+  entities: OsintEntity[];
+  reasoningTrace: ReasoningStep[];
+  finalVerdict: string;
+  recommendedMitigations: string[];
+  localInferenceStats: {
+    model: string;
+    thinkingBudgetTokens: number;
+    tokensPerSecond: number;
+    unifiedMemoryAllocatedGB: number;
+    appleSiliconEngine: string;
+  };
 }

@@ -1,6 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createInitialSwarmState, advanceSwarmStep, approvePendingStep } from './swarmEngine.ts';
+import { 
+  createInitialSwarmState, 
+  advanceSwarmStep, 
+  approvePendingStep,
+  generateDynamicMission,
+  serializeSwarmState,
+  deserializeSwarmState
+} from './swarmEngine.ts';
 import type { SwarmMission, AgentRole } from '../types/index.ts';
 
 
@@ -102,4 +109,32 @@ test('approvePendingStep resumes execution after supervisor approval', () => {
   assert.equal(s3.status, 'completed');
   assert.equal(s3.pendingApproval, undefined);
   assert.ok(s3.logs.some(l => l.message.includes('Approved checkpoint')));
+});
+
+test('generateDynamicMission synthesizes valid 5-step DAG with security approval gate', () => {
+  const mission = generateDynamicMission('Conduct GDPR privacy audit on local vector knowledge base');
+  assert.ok(mission.id.startsWith('mission-custom-'));
+  assert.equal(mission.category, 'Security & Compliance');
+  assert.equal(mission.steps.length, 5);
+  assert.ok(mission.steps.some(s => s.requiresApproval === true));
+  assert.ok(mission.participatingAgents.includes('agent-orion'));
+  assert.ok(mission.participatingAgents.includes('agent-aegis'));
+});
+
+test('serializeSwarmState and deserializeSwarmState round-trips correctly', () => {
+  const initial = createInitialSwarmState(mockMission);
+  const serialized = serializeSwarmState(initial);
+  assert.ok(typeof serialized === 'string');
+  assert.ok(serialized.includes(mockMission.id));
+
+  const restored = deserializeSwarmState(serialized, mockMission);
+  assert.equal(restored.missionId, mockMission.id);
+  assert.equal(restored.status, 'idle');
+  assert.equal(restored.logs.length, 1);
+});
+
+test('deserializeSwarmState gracefully recovers from invalid json with fallback', () => {
+  const recovered = deserializeSwarmState('not valid json {[[', mockMission);
+  assert.equal(recovered.missionId, mockMission.id);
+  assert.equal(recovered.status, 'idle');
 });

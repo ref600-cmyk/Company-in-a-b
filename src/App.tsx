@@ -16,8 +16,10 @@ import { TcoCalculatorView } from './components/TcoCalculatorView.tsx';
 import { AutonomousMissionControlView } from './components/AutonomousMissionControlView.tsx';
 import { ModelZooBenchmarkView } from './components/ModelZooBenchmarkView.tsx';
 import { MacProStationView } from './components/MacProStationView.tsx';
+import { OsintReasoningView } from './components/OsintReasoningView.tsx';
 import { MacProDesktopModal } from './components/MacProDesktopModal.tsx';
 import { DeploymentEmailModal } from './components/DeploymentEmailModal.tsx';
+import { GitHubDeployModal } from './components/GitHubDeployModal.tsx';
 import { AiConsultantModal } from './components/AiConsultantModal.tsx';
 import { PitchDeckModal } from './components/PitchDeckModal.tsx';
 import { ProtocolInspectorModal } from './components/ProtocolInspectorModal.tsx';
@@ -37,6 +39,7 @@ const VALID_NAV_TABS: NavTab[] = [
   'academic-moat', 
   'tco-calculator',
   'mac-pro-station',
+  'osint-reasoning',
   'hardware', 
   'mesh-topology',
   'knowledge-vault',
@@ -68,8 +71,9 @@ export default function App() {
   const [isProtocolInspectorOpen, setIsProtocolInspectorOpen] = useState(false);
   const [isDesktopModalOpen, setIsDesktopModalOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
 
-  // Parse URL query parameter (e.g. ?pitch=1 or ?desktop=1 or ?email=1)
+  // Parse URL query parameter (e.g. ?pitch=1 or ?desktop=1 or ?email=1 or ?github=1)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('pitch') === '1') {
@@ -78,15 +82,27 @@ export default function App() {
       setIsDesktopModalOpen(true);
     } else if (params.get('email') === '1' || params.get('send') === '1') {
       setIsEmailModalOpen(true);
+    } else if (params.get('github') === '1' || params.get('git') === '1') {
+      setIsGitHubModalOpen(true);
     }
   }, []);
 
-  // Reset scroll to top on tab change and disable automatic browser scroll restoration
+  // Reset scroll to top on tab change and sync active tab with URL query parameter
   useEffect(() => {
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
     }
     window.scrollTo(0, 0);
+
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('tab') !== activeTab) {
+        url.searchParams.set('tab', activeTab);
+        window.history.replaceState({}, '', url.toString());
+      }
+    } catch {
+      // Ignore in non-browser environments
+    }
   }, [activeTab]);
 
   return (
@@ -100,6 +116,7 @@ export default function App() {
         onOpenProtocolInspector={() => setIsProtocolInspectorOpen(true)}
         onOpenDesktopModal={() => setIsDesktopModalOpen(true)}
         onOpenEmailModal={() => setIsEmailModalOpen(true)}
+        onOpenGitHubModal={() => setIsGitHubModalOpen(true)}
       />
 
       {/* Main Content Body */}
@@ -126,6 +143,8 @@ export default function App() {
             onGoToModelZoo={() => setActiveTab('model-zoo')}
           />
         )}
+
+        {activeTab === 'osint-reasoning' && <OsintReasoningView />}
 
         {activeTab === 'academic-moat' && <AcademicMoatView />}
 
@@ -171,6 +190,11 @@ export default function App() {
         onClose={() => setIsEmailModalOpen(false)}
         defaultEmail="ref600@gmail.com"
         onOpenStationView={() => setActiveTab('mac-pro-station')}
+      />
+
+      <GitHubDeployModal
+        isOpen={isGitHubModalOpen}
+        onClose={() => setIsGitHubModalOpen(false)}
       />
 
       <AiConsultantModal

@@ -4,6 +4,10 @@ import {
   createInitialSwarmState, 
   advanceSwarmStep, 
   approvePendingStep, 
+  generateDynamicMission,
+  serializeSwarmState,
+  deserializeSwarmState,
+  STORAGE_KEY_SWARM_STATE,
   SwarmExecutionState 
 } from '../utils/swarmEngine.ts';
 import { 
@@ -20,22 +24,56 @@ import {
   Copy,
   ChevronRight,
   ShieldAlert,
-  ArrowRight
+  ArrowRight,
+  Network,
+  Wand2,
+  Layers,
+  Plus
 } from 'lucide-react';
 
 export const LiveSwarmView: React.FC = () => {
+  const [allMissions, setAllMissions] = useState(PREBUILT_MISSIONS);
+  const [customTaskInput, setCustomTaskInput] = useState('');
   const [selectedMissionId, setSelectedMissionId] = useState<string>('mission-sec-audit');
   const [isRunningAuto, setIsRunningAuto] = useState<boolean>(false);
   const [copiedLog, setCopiedLog] = useState<boolean>(false);
 
-  const activeMission = PREBUILT_MISSIONS.find(m => m.id === selectedMissionId) || PREBUILT_MISSIONS[0];
-  const [swarmState, setSwarmState] = useState<SwarmExecutionState>(() => createInitialSwarmState(activeMission));
+  const activeMission = allMissions.find(m => m.id === selectedMissionId) || allMissions[0];
+  const [swarmState, setSwarmState] = useState<SwarmExecutionState>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_SWARM_STATE);
+        if (saved) {
+          return deserializeSwarmState(saved, activeMission);
+        }
+      } catch {}
+    }
+    return createInitialSwarmState(activeMission);
+  });
   const logsEndRef = useRef<HTMLDivElement>(null);
+
+  // Sync state to local storage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_SWARM_STATE, serializeSwarmState(swarmState));
+    } catch {}
+  }, [swarmState]);
+
+  const handleSynthesizeMission = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customTaskInput.trim()) return;
+    const newMission = generateDynamicMission(customTaskInput.trim());
+    setAllMissions(prev => [newMission, ...prev]);
+    setSelectedMissionId(newMission.id);
+    setSwarmState(createInitialSwarmState(newMission));
+    setCustomTaskInput('');
+    setIsRunningAuto(true);
+  };
 
   // When changing mission, re-initialize
   const handleSelectMission = (missionId: string) => {
     setSelectedMissionId(missionId);
-    const mission = PREBUILT_MISSIONS.find(m => m.id === missionId) || PREBUILT_MISSIONS[0];
+    const mission = allMissions.find(m => m.id === missionId) || allMissions[0];
     setSwarmState(createInitialSwarmState(mission));
     setIsRunningAuto(false);
   };
@@ -141,13 +179,44 @@ export const LiveSwarmView: React.FC = () => {
         </div>
       </div>
 
+      {/* Dynamic Mission Synthesizer */}
+      <form onSubmit={handleSynthesizeMission} className="p-4 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-slate-900 to-slate-900 border border-cyan-800/40 shadow-xl space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Wand2 className="w-4 h-4 text-cyan-400" />
+            <span className="text-xs font-mono font-semibold text-white">Dynamic Task Injector & Swarm DAG Synthesizer</span>
+          </div>
+          <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded-full border border-cyan-800/60">
+            Apple Silicon DAG Engine
+          </span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input
+            type="text"
+            value={customTaskInput}
+            onChange={(e) => setCustomTaskInput(e.target.value)}
+            placeholder="Type any corporate mission (e.g. Ingest 500 regulatory PDFs into vector store, patch firewall...)"
+            className="flex-1 px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+          />
+          <button
+            type="submit"
+            disabled={!customTaskInput.trim()}
+            className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-cyan-500/20"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Synthesize & Run DAG</span>
+          </button>
+        </div>
+      </form>
+
       {/* Mission Select Buttons */}
       <div className="space-y-2">
         <label className="text-xs font-mono font-semibold text-slate-400 uppercase tracking-wider block">
           Select Autonomous Enterprise Mission:
         </label>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {PREBUILT_MISSIONS.map((mission) => {
+          {allMissions.map((mission) => {
             const isSelected = mission.id === selectedMissionId;
             return (
               <button
@@ -245,6 +314,93 @@ export const LiveSwarmView: React.FC = () => {
                 <div className="text-[11px] font-mono text-slate-400 pt-2 border-t border-slate-800/80 flex items-center justify-between">
                   <span>Model: {agent.model.split(' ')[0]}</span>
                   <span className="text-cyan-400/90">{agent.permissionLevel}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Interactive Multi-Agent DAG Visualizer */}
+      <div className="p-5 rounded-2xl border border-cyan-900/60 bg-slate-900/80 shadow-2xl space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="flex items-center gap-2.5">
+            <Network className="w-4 h-4 text-cyan-400" />
+            <h3 className="text-sm font-bold text-white">
+              Directed Acyclic Graph (DAG) Execution Pipeline
+            </h3>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
+              {activeMission.steps.length} Sequential Nodes
+            </span>
+          </div>
+          <span className="text-xs font-mono text-slate-400">
+            Active Node: <span className="text-cyan-300 font-bold">{Math.min(swarmState.currentStepIndex + 1, swarmState.totalSteps)}</span> / {swarmState.totalSteps}
+          </span>
+        </div>
+
+        {/* Node Flowchart */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 relative">
+          {activeMission.steps.map((step, idx) => {
+            const isCompleted = idx < swarmState.currentStepIndex;
+            const isCurrent = idx === swarmState.currentStepIndex;
+            const isPendingApproval = isCurrent && swarmState.status === 'paused_approval';
+            const agent = DEFAULT_AGENTS.find(a => a.id === step.agentId);
+
+            return (
+              <div
+                key={idx}
+                className={`p-3.5 rounded-xl border flex flex-col justify-between transition-all relative ${
+                  isPendingApproval
+                    ? 'border-amber-400 bg-amber-950/40 shadow-lg shadow-amber-950/60 ring-2 ring-amber-400/50'
+                    : isCurrent
+                    ? 'border-cyan-400 bg-cyan-950/40 shadow-lg shadow-cyan-950/60 ring-2 ring-cyan-400/50'
+                    : isCompleted
+                    ? 'border-emerald-500/60 bg-emerald-950/20'
+                    : 'border-slate-800 bg-slate-950/60 opacity-60'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-mono font-bold text-slate-400">
+                      NODE #{idx + 1}
+                    </span>
+                    {isCompleted ? (
+                      <span className="flex items-center gap-1 text-[10px] font-mono text-emerald-400 font-semibold">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Done
+                      </span>
+                    ) : isPendingApproval ? (
+                      <span className="flex items-center gap-1 text-[10px] font-mono text-amber-300 font-semibold animate-pulse">
+                        <ShieldAlert className="w-3.5 h-3.5" />
+                        Gate
+                      </span>
+                    ) : isCurrent ? (
+                      <span className="flex items-center gap-1 text-[10px] font-mono text-cyan-300 font-semibold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                        Active
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-mono text-slate-500">
+                        Queued
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="text-xs font-semibold text-white mb-1 line-clamp-2">
+                    {step.action}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-800/80 mt-2 space-y-1">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                    <span>{agent?.name.split(' ')[0] || 'Agent'}</span>
+                    <span className="text-cyan-400">{step.toolUsed || 'native_uma'}</span>
+                  </div>
+                  {step.requiresApproval && (
+                    <div className="text-[9px] font-mono text-amber-400/90 font-semibold">
+                      Human Gate Required
+                    </div>
+                  )}
                 </div>
               </div>
             );

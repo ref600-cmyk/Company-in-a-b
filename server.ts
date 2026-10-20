@@ -2,25 +2,35 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
+import { spawn } from 'child_process';
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 
-const rawKey = process.env.GEMINI_API_KEY;
-const isRealKey = Boolean(rawKey && rawKey !== 'MY_GEMINI_API_KEY' && !rawKey.startsWith('MY_'));
-
-let aiClient: GoogleGenAI | null = null;
-if (isRealKey && rawKey) {
-  aiClient = new GoogleGenAI({ apiKey: rawKey });
+function getGeminiClient(): GoogleGenAI | null {
+  const rawKey = process.env.GEMINI_API_KEY;
+  const isRealKey = Boolean(rawKey && rawKey !== 'MY_GEMINI_API_KEY' && !rawKey.startsWith('MY_'));
+  if (isRealKey && rawKey) {
+    return new GoogleGenAI({
+      apiKey: rawKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
+  }
+  return null;
 }
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  const client = getGeminiClient();
   res.json({
     status: 'ok',
-    hasGeminiKey: isRealKey,
+    hasGeminiKey: Boolean(client),
     timestamp: new Date().toISOString()
   });
 });
@@ -80,6 +90,7 @@ function generateTailoredBlueprint(
 // AI Architecture Consultant API
 app.post('/api/ai-consult', async (req, res) => {
   const { companyName, companySize, targetWorkflows, hardwareBudget, existingStack } = req.body;
+  const aiClient = getGeminiClient();
 
   if (!aiClient) {
     const blueprint = generateTailoredBlueprint(companyName, companySize, targetWorkflows, hardwareBudget, existingStack);
@@ -109,7 +120,7 @@ Provide a rigorous, technical, and executive-ready blueprint:
 Keep it professional, highly structured with Markdown headings, concrete metrics, and actionable.`;
 
     const response = await aiClient.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.8-flash',
       contents: prompt
     });
 
@@ -304,6 +315,32 @@ echo "================================================================="
   res.setHeader('Content-Type', 'text/x-shellscript');
   res.setHeader('Content-Disposition', 'attachment; filename="SkyShadow-MacPro-Station.command"');
   res.send(launcherScript);
+});
+
+// Export repository tarball for GitHub deployment & offline backup
+app.get('/api/export-repo.tar.gz', (req, res) => {
+  res.setHeader('Content-Type', 'application/gzip');
+  res.setHeader('Content-Disposition', 'attachment; filename="skyshadow-local-mesh.tar.gz"');
+
+  const tarProcess = spawn('tar', [
+    '--exclude=node_modules',
+    '--exclude=.playwright-cli',
+    '--exclude=.aistudio',
+    '--exclude=dist',
+    '-czf',
+    '-',
+    '.'
+  ], { cwd: process.cwd() });
+
+  tarProcess.stdout.pipe(res);
+  tarProcess.stderr.on('data', (err) => {
+    console.warn('Tar export note:', err.toString());
+  });
+  tarProcess.on('error', (err) => {
+    if (!res.headersSent) {
+      res.status(500).send('Error generating archive');
+    }
+  });
 });
 
 // Mount Vite middleware for development

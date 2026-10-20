@@ -23,7 +23,9 @@ import {
   Calculator,
   Laptop,
   Download,
-  Mail
+  Mail,
+  FolderGit2,
+  Eye
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -34,6 +36,7 @@ interface NavbarProps {
   onOpenProtocolInspector: () => void;
   onOpenDesktopModal?: () => void;
   onOpenEmailModal?: () => void;
+  onOpenGitHubModal?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ 
@@ -43,7 +46,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenPitchDeck,
   onOpenProtocolInspector,
   onOpenDesktopModal,
-  onOpenEmailModal
+  onOpenEmailModal,
+  onOpenGitHubModal
 }) => {
   const tabs: { id: NavTab; label: string; icon: React.ReactNode; badge?: string }[] = [
     {
@@ -63,6 +67,12 @@ export const Navbar: React.FC<NavbarProps> = ({
       label: 'TCO & Cloud ROI',
       icon: <Calculator className="w-4 h-4" />,
       badge: '3-Year Ledger'
+    },
+    {
+      id: 'osint-reasoning',
+      label: 'Sovereign OSINT & Extreme Reasoning',
+      icon: <Eye className="w-4 h-4" />,
+      badge: 'DeepSeek-R1 CoT'
     },
     {
       id: 'mac-pro-station',
@@ -215,6 +225,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Mail className="w-3.5 h-3.5 text-cyan-400" />
               <span>Email Link</span>
+            </button>
+          )}
+
+          {/* GitHub Deploy Button */}
+          {onOpenGitHubModal && (
+            <button
+              onClick={onOpenGitHubModal}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-950/70 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-700/60 hover:border-emerald-500 transition-all cursor-pointer active:scale-95 shadow-sm shadow-emerald-950/40"
+              aria-label="Deploy to GitHub"
+            >
+              <FolderGit2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>GitHub Deploy</span>
             </button>
           )}
 

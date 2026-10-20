@@ -11,14 +11,17 @@ import {
   ShieldCheck, 
   Network,
   Share2,
-  Mail
+  Mail,
+  FolderGit2
 } from 'lucide-react';
 import { DeploymentEmailModal } from './DeploymentEmailModal.tsx';
+import { GitHubDeployModal } from './GitHubDeployModal.tsx';
 
 export const DeploymentView: React.FC = () => {
   const [activeFileIndex, setActiveFileIndex] = useState<number>(0);
   const [copied, setCopied] = useState<boolean>(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState<boolean>(false);
+  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState<boolean>(false);
 
   const currentFile = DEPLOYMENT_TEMPLATES[activeFileIndex];
 
@@ -55,6 +58,15 @@ export const DeploymentView: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setIsGitHubModalOpen(true)}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-emerald-950/70 hover:bg-emerald-900 text-emerald-300 border border-emerald-700/80 transition-all cursor-pointer shadow-sm shadow-emerald-950/40"
+            aria-label="Deploy to GitHub"
+          >
+            <FolderGit2 className="w-4 h-4 text-emerald-400" />
+            <span>Deploy to GitHub</span>
+          </button>
+
           <button
             onClick={() => setIsEmailModalOpen(true)}
             className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-cyan-950/70 hover:bg-cyan-900 text-cyan-300 border border-cyan-800/80 transition-all cursor-pointer"
@@ -197,6 +209,11 @@ export const DeploymentView: React.FC = () => {
         isOpen={isEmailModalOpen}
         onClose={() => setIsEmailModalOpen(false)}
         defaultEmail="ref600@gmail.com"
+      />
+
+      <GitHubDeployModal
+        isOpen={isGitHubModalOpen}
+        onClose={() => setIsGitHubModalOpen(false)}
       />
     </div>
   );
